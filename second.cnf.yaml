@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation Sample Template ElastiCache: Sample template showing how to create an Amazon ElastiCache Cache Cluster with Auto Discovery and access it from a very simple PHP application. **WARNING** This template creates an Amazon EC2 Instance and an Amazon ElastiCache Cluster. You will be billed for the AWS resources used if you create a stack from this template.'
+Parameters:
+    CacheNodeType:
+        Description: The compute and memory capacity of the nodes in the Cache Cluster
+        Type: String
+        Default: cache.t2.micro
+        AllowedValues:
+            - cache.m1.small
+            - cache.m1.large
+            - cache.m1.xlarge
+            - cache.m2.xlarge
+            - cache.m2.2xlarge
+            - cache.m2.4xlarge
+            - cache.c1.xlarge
+            - cache.t2.micro
+            - cache.t2.small
+            - cache.t2.medium
+            - cache.m3.medium
+            - cache.m3.large
+            - cache.m3.xlarge
+            - cache.m3.2xlarge
+            - cache.r3.large
+            - cache.r3.xlarge
+            - cache.r3.2xlarge
+            - cache.r3.4xlarge
+            - cache.r3.8xlarge
+        ConstraintDescription: must select a valid Cache Node type.
+    NumberOfCacheNodes:
+        Default: '1'
+        Description: The nuber of Cache Nodes the Cache Cluster should have
+        Type: Number
+        MinValue: '1'
+        MaxValue: '10'
+        ConstraintDescription: must be between 5 and 10.
+    
+    VpcSecurityGroupIds:
+        Type: 'List<AWS::EC2::SecurityGroup::Id>'
+Resources:
+    CacheCluster:
+        Type: 'AWS::ElastiCache::CacheCluster'
+        Properties:
+            CacheNodeType: cache.t2.micro
+            VpcSecurityGroupIds:
+                Ref: VpcSecurityGroupIds
+            Engine: memcached
+            NumCacheNodes: '1'
+Outputs:
+    OtherOutput:
+        Description: 'Just a place holder!'
+        Value: Comes Later to you...after figuring out what is needed.
+    CacheClusterEndPoint:
+        Description: Cache Cluster Endpoint; use this to connect from your application
+        Value:
+            'Fn::Join':
+                - ':'
+                - 
+                    - 
+                        'Fn::GetAtt':
+                            - CacheCluster
+                            - ConfigurationEndpoint.Address
+                    - 
+                        'Fn::GetAtt':
+                            - CacheCluster
+                            - ConfigurationEndpoint.Port
