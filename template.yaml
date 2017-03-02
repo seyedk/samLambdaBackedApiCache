@@ -1,17 +1,26 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Simple CRUD webservice. State is stored in a SimpleTable (DynamoDB) resource.
+Description: Simple API Gateway backed with lambda which in turn interacts wiht Elastic Cache Memcached . 
 Resources:
   GetFunction:
     Type: AWS::Serverless::Function
+    DependsOn: CacheClustrer
     Properties:
+      VpcConfig:
+        SecurityGroupIds: 
+            - sg-1d366565
+        SubnetIds: 
+            - subnet-b65bcac0
+            - subnet-916fb0c9
+            - subnet-f10c7595
       Handler: index.get
       Runtime: nodejs4.3
-      CodeUri: s3://gw-sam-apiwithlambda/api_backend.zip
-      Policies: AmazonDynamoDBReadOnlyAccess
+      CodeUri: s3://gw-sam-apiwithlambda-cach2/index.zip
+      Policies: AdministratorAccess
       Environment:
         Variables:
-          TABLE_NAME: !Ref Table
+          CACHE_ENDPOINT: 
+            !Join [":",[!GetAtt CacheCluster.ConfigurationEndpoint.Address,!GetAtt CacheCluster.ConfigurationEndpoint.Port]]         
       Events:
         GetResource:
           Type: Api
@@ -19,39 +28,12 @@ Resources:
             Path: /resource/{resourceId}
             Method: get
 
-  PutFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.put
-      Runtime: nodejs4.3
-      CodeUri: s3://gw-sam-apiwithlambda/api_backend.zip
-      Policies: AmazonDynamoDBFullAccess
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref Table
-      Events:
-        PutResource:
-          Type: Api
-          Properties:
-            Path: /resource/{resourceId}
-            Method: put
-
-  DeleteFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.delete
-      Runtime: nodejs4.3
-      CodeUri: s3://gw-sam-apiwithlambda/api_backend.zip
-      Policies: AmazonDynamoDBFullAccess
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref Table
-      Events:
-        DeleteResource:
-          Type: Api
-          Properties:
-            Path: /resource/{resourceId}
-            Method: delete
-
-  Table:
-    Type: AWS::Serverless::SimpleTable
+  CacheCluster:
+        Type: 'AWS::ElastiCache::CacheCluster'
+        
+        Properties:
+            CacheNodeType: cache.t2.micro
+            VpcSecurityGroupIds: 
+                - sg-1d366565
+            Engine: memcached
+            NumCacheNodes: '1'
