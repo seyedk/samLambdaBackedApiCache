@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Simple API Gateway backed with lambda which in turn interacts wiht Elastic Cache Memcached . 
+Description: Simple API Gateway backed with lambda which in turn interacts wiht Elastic Cache Memcached.
 Resources:
   GetFunction:
     Type: AWS::Serverless::Function
@@ -15,7 +15,7 @@ Resources:
             - subnet-f10c7595
       Handler: index.get
       Runtime: nodejs4.3
-      CodeUri: s3://gw-sam-apiwithlambda-cach2/index.zip
+      CodeUri: ./
       Policies: AdministratorAccess
       Environment:
         Variables:
